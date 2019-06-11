@@ -1,21 +1,26 @@
 import React from 'react';
-import { Route, Router, createBrowserHistory } from '../../third-party';
+import {
+  Route,
+  Router,
+  createBrowserHistory,
+  Provider,
+} from '../../third-party';
+import { store } from '../../configureStore';
 
-import { Favorites } from '../Favorites/Favorites';
-import { ItemsList } from '../ItemsList/ItemsList';
+import { FavoritesContainer } from '../Favorites/Favorites';
+import { ItemsListContainer } from '../ItemsList/ItemsList';
 import { Home } from '../Home/Home';
-import { StoreProvider } from '../../store/Store';
 
 const App: React.FC = () => {
   return (
     <div className="App">
-      <StoreProvider>
+      <Provider store={store}>
         <Router history={createBrowserHistory()}>
-          <Route path="/items-list" component={ItemsList} />
-          <Route path="/favorites" component={Favorites} />
+          <Route path="/items-list" component={ItemsListContainer} />
+          <Route path="/favorites" component={FavoritesContainer} />
           <Route exact path="/" component={Home} />
         </Router>
-      </StoreProvider>
+      </Provider>
     </div>
   );
 };

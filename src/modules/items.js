@@ -1,49 +1,40 @@
-const LOAD_ITEMS = 'ITEMS/LOAD';
+import { createAction, handleActions } from 'third-party';
 
-export const itemsInitial = [];
+const actionRequestItems = createAction('items/REQUEST');
+const actionSuccessItems = createAction('items/SUCCESS');
+const actionFailureItems = createAction('items/FAILURE');
 
-export const itemsReducer = (state, action) => {
-  return (
-    {
-      [LOAD_ITEMS]: action.payload.items,
-    }[action.type] || state
-  );
+const initialState = {
+  isLoading: false,
+  items: [],
+  error: null,
 };
 
-export const loadItems = dispatch => {
-  const items = [
-    {
-      id: 1,
-      name: 'Raiders of the Lost Ark',
-      year: 1981,
-    },
-    {
-      id: 2,
-      name: 'The Lord of the Rings: The Fellowship of the Ring',
-      year: 2001,
-    },
-    {
-      id: 3,
-      name: 'The Lord of the Rings: The Return of the King',
-      year: 2003,
-    },
-    {
-      id: 4,
-      name: 'Die Hard',
-      year: 1988,
-    },
-    {
-      id: 5,
-      name: 'Gladiator',
-      year: 2000,
-    },
-  ];
-  setTimeout(
-    () =>
-      dispatch({
-        type: LOAD_ITEMS,
-        payload: { items },
-      }),
-    1000
-  );
-};
+export default handleActions(
+  {
+    [actionRequestItems]: state => ({ ...state, isLoading: true }),
+    [actionSuccessItems]: (state, action) => ({
+      ...state,
+      items: action.payload,
+      isLoading: false,
+    }),
+    [actionFailureItems]: (state, action) => ({
+      ...state,
+      error: action.payload,
+      isLoading: false,
+    }),
+  },
+  initialState
+);
+
+export function loadItems() {
+  return {
+    // Types of actions to emit before and after
+    types: [actionRequestItems, actionSuccessItems, actionFailureItems],
+    // Perform the fetching:
+    callAPI: () =>
+      fetch('http://localhost:3001/movies').then(response => response.json()),
+    // Arguments to inject in begin/end actions
+    // payload: { libraryId: 1 }
+  };
+}

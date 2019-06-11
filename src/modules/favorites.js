@@ -1,26 +1,20 @@
-import { _ } from '../third-party';
+import { _, createAction, handleActions } from 'third-party';
 
-const ADD = 'FAVORITES/ADD';
-const REMOVE = 'FAVORITES/REMOVE';
+export const addToFavorites = createAction('favorites/ADD');
+export const removeFromFavorites = createAction('favorites/REMOVE');
 
-export const favoritesInitial = [];
-
-export const favoritesReducer = (state, action) =>
-  ({
-    [ADD]: [...state, action.payload.id],
-    [REMOVE]: _.without(state, action.payload.id),
-  }[action.type] || state);
-
-export const addToFavorites = (dispatch, id) => {
-  dispatch({
-    type: ADD,
-    payload: { id },
-  });
+const initialState = {
+  items: [],
 };
 
-export const removeFromFavorites = (dispatch, id) => {
-  dispatch({
-    type: REMOVE,
-    payload: { id },
-  });
-};
+export default handleActions(
+  {
+    [addToFavorites]: (state, { payload }) => ({
+      items: [...state.items, payload],
+    }),
+    [removeFromFavorites]: (state, { payload }) => ({
+      items: _.without(state.items, payload),
+    }),
+  },
+  initialState
+);

@@ -1,29 +1,38 @@
 import React from 'react';
-import { Link, _ } from '../../third-party';
-import { Store } from '../../store/Store';
-import { loadItems } from '../../modules/items';
-import { addToFavorites, removeFromFavorites } from '../../modules/favorites';
+import { Link, _, connect } from 'third-party';
+import { loadItems } from 'modules/items';
+import { addToFavorites, removeFromFavorites } from 'modules/favorites';
 
-export const ItemsList = () => {
-  const { state, dispatch } = React.useContext(Store);
+const mapStateToProps = state => ({
+  items: state.items.items,
+  isLoading: state.items.isLoading,
+  favorites: state.favorites.items,
+});
 
+const mapDispatchToProps = {
+  loadItems,
+  addToFavorites,
+  removeFromFavorites,
+};
+
+const ItemsList = props => {
   React.useEffect(() => {
-    state.items.length === 0 && loadItems(dispatch);
-  }, [state]);
+    props.items.length === 0 && props.loadItems();
+  }, [props.items, props.dispatch]);
 
   return (
     <div>
-      {!!state.items.length ? (
+      {!props.isLoading ? (
         <ul>
-          {state.items.map(it => (
+          {props.items.map(it => (
             <li key={it.id}>
               {it.name} ({it.year}){' '}
-              {_.includes(state.favorites, it.id) ? (
-                <button onClick={() => removeFromFavorites(dispatch, it.id)}>
+              {_.includes(props.favorites, it.id) ? (
+                <button onClick={() => props.removeFromFavorites(it.id)}>
                   &#9733;
                 </button>
               ) : (
-                <button onClick={() => addToFavorites(dispatch, it.id)}>
+                <button onClick={() => props.addToFavorites(it.id)}>
                   &#9734;
                 </button>
               )}
@@ -38,3 +47,8 @@ export const ItemsList = () => {
     </div>
   );
 };
+
+export const ItemsListContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ItemsList);
