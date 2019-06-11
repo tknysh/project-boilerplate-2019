@@ -8,7 +8,7 @@ import {
 import { store } from '../../configureStore';
 
 import { FavoritesContainer } from '../Favorites/Favorites';
-import { ItemsListContainer } from '../ItemsList/ItemsList';
+import { MoviesListContainer } from '../MoviesList/MoviesList';
 import { Home } from '../Home/Home';
 
 const App: React.FC = () => {
@@ -16,7 +16,7 @@ const App: React.FC = () => {
     <div className="App">
       <Provider store={store}>
         <Router history={createBrowserHistory()}>
-          <Route path="/items-list" component={ItemsListContainer} />
+          <Route path="/movies-list" component={MoviesListContainer} />
           <Route path="/favorites" component={FavoritesContainer} />
           <Route exact path="/" component={Home} />
         </Router>

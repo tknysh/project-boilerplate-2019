@@ -1,25 +1,25 @@
 import React from 'react';
 import { Link, _, connect } from 'third-party';
-import { loadItems } from 'modules/items';
+import { loadMovies } from 'modules/movies';
 import { removeFromFavorites } from 'modules/favorites';
 
 const mapStateToProps = state => ({
-  items: state.items.items,
-  favorites: state.favorites.items,
+  items: state.movies.movies,
+  favorites: state.favorites.movies,
 });
 
 const mapDispatchToProps = {
-  loadItems,
+  loadItems: loadMovies,
   removeFromFavorites,
 };
 
 const Favorites = props => {
   React.useEffect(() => {
-    props.items.length === 0 && props.loadItems();
-  }, [props.items]);
+    props.movies.length === 0 && props.loadItems();
+  }, [props.movies]);
 
   const filteredItems = _.reduce(
-    props.items,
+    props.movies,
     (acc, it) => (_.includes(props.favorites, it.id) ? [...acc, it] : acc),
     []
   );
@@ -39,13 +39,13 @@ const Favorites = props => {
         ))}
       </ul>
       <br />
-      {!!props.items.length && !props.favorites.length && (
+      {!!props.movies.length && !props.favorites.length && (
         <div>
           No Favorites
           <br />
         </div>
       )}
-      {!props.items.length && (
+      {!props.movies.length && (
         <div>
           Loading ...
           <br />

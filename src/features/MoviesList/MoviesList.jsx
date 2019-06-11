@@ -1,30 +1,33 @@
 import React from 'react';
 import { Link, _, connect } from 'third-party';
-import { loadItems } from 'modules/items';
+import { loadMovies } from 'modules/movies';
 import { addToFavorites, removeFromFavorites } from 'modules/favorites';
+import { cancelRequest } from 'utils/api';
+import { loadMoviesUrl } from 'constants/endpoints';
 
 const mapStateToProps = state => ({
-  items: state.items.items,
-  isLoading: state.items.isLoading,
+  movies: state.movies.items,
+  isLoading: state.movies.isLoading,
+  isCanceled: state.movies.isCanceled,
   favorites: state.favorites.items,
 });
 
 const mapDispatchToProps = {
-  loadItems,
+  loadMovies,
   addToFavorites,
   removeFromFavorites,
 };
 
-const ItemsList = props => {
+const MoviesList = props => {
   React.useEffect(() => {
-    props.items.length === 0 && props.loadItems();
-  }, [props.items, props.dispatch]);
+    props.movies.length === 0 && props.loadMovies();
+  }, [props.movies, props.dispatch]);
 
   return (
     <div>
       {!props.isLoading ? (
         <ul>
-          {props.items.map(it => (
+          {props.movies.map(it => (
             <li key={it.id}>
               {it.name} ({it.year}){' '}
               {_.includes(props.favorites, it.id) ? (
@@ -40,15 +43,21 @@ const ItemsList = props => {
           ))}
         </ul>
       ) : (
-        <div>Loading ...</div>
+        <div>
+          Loading ...
+          <button onClick={() => cancelRequest(loadMoviesUrl, true)}>
+            Cancel
+          </button>
+        </div>
       )}
+      {props.isCanceled && <div>Request canceled</div>}
       <br />
       <Link to="/">Back</Link>
     </div>
   );
 };
 
-export const ItemsListContainer = connect(
+export const MoviesListContainer = connect(
   mapStateToProps,
   mapDispatchToProps
-)(ItemsList);
+)(MoviesList);

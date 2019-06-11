@@ -5,7 +5,7 @@ export const Home: React.FC = () => {
   return (
     <ul>
       <li>
-        <Link to="/items-list">Items List</Link>
+        <Link to="/movies-list">Movies List</Link>
       </li>
       <li>
         <Link to="/favorites">Favorites</Link>

@@ -1,10 +1,10 @@
 import { combineReducers } from 'third-party';
 
-import items from 'modules/items';
+import movies from 'modules/movies';
 import favorites from 'modules/favorites';
 
 const rootReducer = combineReducers({
-  items,
+  movies,
   favorites,
 });
 

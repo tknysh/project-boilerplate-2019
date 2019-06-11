@@ -1,4 +1,6 @@
-import { _ } from '../third-party';
+import { _, axios } from '../third-party';
+import { createAction } from 'redux-actions';
+export { createAction, handleActions, createActions } from 'redux-actions';
 
 export function defaultImport(module) {
   // eslint-disable-next-line no-underscore-dangle
@@ -20,7 +22,7 @@ export const callAPIMiddleware = ({ dispatch }) => next => async action => {
     throw new Error('Expected callAPI to be a function.');
   }
 
-  const [requestType, successType, failureType] = types.map(type =>
+  const [successType, requestType, failureType, cancelType] = types.map(type =>
     typeof type === String ? type : type.toString()
   );
 
@@ -41,9 +43,55 @@ export const callAPIMiddleware = ({ dispatch }) => next => async action => {
     });
   } catch (error) {
     dispatch({
-      type: failureType,
+      type: axios.isCancel(error) && cancelType ? cancelType : failureType,
       payload: error,
       error: true,
     });
   }
 };
+
+export const genericApiInitialState = {
+  isLoading: false,
+  isCanceled: false,
+  error: null,
+};
+
+export const genericApiReducers = prefix => ({
+  [`${prefix}/REQUEST`]: genericStartRequestReducer,
+  [`${prefix}/FAILURE`]: genericFailureRequestReducer,
+  [`${prefix}/CANCELED`]: genericCancelRequestReducer,
+});
+
+export const genericApiActions = prefix => [
+  createAction(`${prefix}/REQUEST`),
+  createAction(`${prefix}/FAILURE`),
+  createAction(`${prefix}/CANCELED`),
+];
+
+export const genericSuccessRequestReducer = handlePayload => (
+  state,
+  action
+) => ({
+  ...state,
+  isLoading: false,
+  isCanceled: false,
+  ...handlePayload(action.payload),
+});
+
+export const genericStartRequestReducer = state => ({
+  ...state,
+  isLoading: true,
+  isCanceled: false,
+});
+
+export const genericFailureRequestReducer = (state, action) => ({
+  ...state,
+  error: action.payload,
+  isLoading: false,
+});
+
+export const genericCancelRequestReducer = state => ({
+  ...state,
+  isCanceled: true,
+  isLoading: false,
+});
