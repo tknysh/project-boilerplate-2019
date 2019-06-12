@@ -11,7 +11,7 @@ export function defaultImport(module) {
 }
 
 export const callAPIMiddleware = ({ dispatch }) => next => async action => {
-  const { types, callAPI, payload = {} } = action;
+  const { types, callAPI } = action;
 
   if (!types) {
     // Normal action: pass it on
@@ -30,68 +30,90 @@ export const callAPIMiddleware = ({ dispatch }) => next => async action => {
     type: requestType,
   });
 
+  let result;
   try {
-    const result = await callAPI();
+    result = await callAPI();
     dispatch({
       type: successType,
-      payload: _.isEmpty(payload)
-        ? result
-        : {
-            ...result,
-            ...payload,
-          },
+      payload: result,
     });
   } catch (error) {
+    result = error;
     dispatch({
       type: axios.isCancel(error) && cancelType ? cancelType : failureType,
       payload: error,
       error: true,
     });
   }
+  return result;
 };
 
-export const genericApiInitialState = {
-  isLoading: false,
-  isCanceled: false,
-  error: null,
-};
-
-export const genericApiReducers = prefix => ({
-  [`${prefix}/REQUEST`]: genericStartRequestReducer,
-  [`${prefix}/FAILURE`]: genericFailureRequestReducer,
-  [`${prefix}/CANCELED`]: genericCancelRequestReducer,
+export const genericApiInitialState = (storeValuePrefix = '') => ({
+  [_.camelCase(`is ${storeValuePrefix} Pending`)]: false,
+  [_.camelCase(`is ${storeValuePrefix} Canceled`)]: false,
+  [_.camelCase(`${storeValuePrefix} Error`)]: null,
 });
 
-export const genericApiActions = prefix => [
-  createAction(`${prefix}/REQUEST`),
-  createAction(`${prefix}/FAILURE`),
-  createAction(`${prefix}/CANCELED`),
-];
+const SUCCESS = 'SUCCESS';
+const REQUEST = 'REQUEST';
+const FAILURE = 'FAILURE';
+const CANCELED = 'CANCELED';
 
-export const genericSuccessRequestReducer = handlePayload => (
+export const genericApiReducers = (
+  actionNamePrefix,
+  storeValuePrefix = ''
+) => ({
+  [`${actionNamePrefix}/${SUCCESS}`]: genericSuccessRequestReducer(
+    storeValuePrefix
+  )(),
+  [`${actionNamePrefix}/${REQUEST}`]: genericStartRequestReducer(
+    storeValuePrefix
+  ),
+  [`${actionNamePrefix}/${FAILURE}`]: genericFailureRequestReducer(
+    storeValuePrefix
+  ),
+  [`${actionNamePrefix}/${CANCELED}`]: genericCancelRequestReducer(
+    storeValuePrefix
+  ),
+});
+
+export const genericSuccessRequestReducer = (
+  storeValuePrefix = ''
+) => handlePayload => (state, action) => ({
+  ...state,
+  [_.camelCase(`is ${storeValuePrefix} Pending`)]: false,
+  [_.camelCase(`is ${storeValuePrefix} Canceled`)]: false,
+  ...(handlePayload ? handlePayload(action.payload, state) : {}),
+});
+
+export const genericStartRequestReducer = (storeValuePrefix = '') => state => ({
+  ...state,
+  [_.camelCase(`is ${storeValuePrefix} Pending`)]: true,
+  [_.camelCase(`is ${storeValuePrefix} Canceled`)]: false,
+});
+
+export const genericFailureRequestReducer = (storeValuePrefix = '') => (
   state,
   action
 ) => ({
   ...state,
-  isLoading: false,
-  isCanceled: false,
-  ...handlePayload(action.payload),
+  [_.camelCase(`${storeValuePrefix} Error`)]: action.payload,
+  [_.camelCase(`is ${storeValuePrefix} Pending`)]: false,
 });
 
-export const genericStartRequestReducer = state => ({
+export const genericCancelRequestReducer = (
+  storeValuePrefix = ''
+) => state => ({
   ...state,
-  isLoading: true,
-  isCanceled: false,
+  [_.camelCase(`is ${storeValuePrefix} Canceled`)]: true,
+  [_.camelCase(`is ${storeValuePrefix} Pending`)]: false,
 });
 
-export const genericFailureRequestReducer = (state, action) => ({
-  ...state,
-  error: action.payload,
-  isLoading: false,
-});
-
-export const genericCancelRequestReducer = state => ({
-  ...state,
-  isCanceled: true,
-  isLoading: false,
-});
+export const createSuccessAction = actionNamePrefix =>
+  createAction(`${actionNamePrefix}/${SUCCESS}`);
+export const createRequestAction = actionNamePrefix =>
+  createAction(`${actionNamePrefix}/${REQUEST}`);
+export const createFailureAction = actionNamePrefix =>
+  createAction(`${actionNamePrefix}/${FAILURE}`);
+export const createCanceledAction = actionNamePrefix =>
+  createAction(`${actionNamePrefix}/${CANCELED}`);

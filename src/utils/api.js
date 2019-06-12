@@ -3,7 +3,7 @@ import { _, qs, axios, CancelToken } from '../third-party';
 const axiosFetcher = axios.create({
   headers: { 'Content-Type': 'application/json' },
   responseType: 'json',
-  validateStatus: status => status === 200,
+  validateStatus: status => status >= 200 && status < 400,
   paramsSerializer: params =>
     _.isEmpty(params) ? '' : `${qs.stringify(params)}`,
 });
