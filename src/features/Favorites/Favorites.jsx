@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, _, connect } from 'third-party';
 import { loadMovies } from 'modules/movies';
 import { removeFromFavorites } from 'modules/favorites';
+import { MovieItem } from 'components/MovieItem/MovieItem';
 
 const mapStateToProps = state => ({
   movies: state.movies.items,
@@ -31,10 +32,11 @@ const Favorites = props => {
       <ul>
         {_.map(filteredItems, it => (
           <li key={it.id}>
-            {it.name} ({it.year}) &nbsp;
-            <button onClick={() => props.removeFromFavorites(it.id)}>
-              remove
-            </button>
+            <MovieItem
+              {...it}
+              isFavorite
+              removeFromFavorites={props.removeFromFavorites}
+            />
           </li>
         ))}
       </ul>

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, _, connect } from 'third-party';
+import { AddMovieForm } from 'components/AddMovieForm/AddMovieForm';
 import { loadMovies, addMovie, deleteMovie } from 'modules/movies';
 import { addToFavorites, removeFromFavorites } from 'modules/favorites';
 import { cancelRequest } from 'utils/api';
 import { moviesUrl } from 'constants/endpoints';
+import { MovieItem } from 'components/MovieItem/MovieItem';
 
 const mapStateToProps = state => ({
   movies: state.movies.items,
@@ -23,30 +25,9 @@ const mapDispatchToProps = {
 };
 
 const MoviesList = props => {
-  const [movieName, setMovieName] = useState('');
-  const [movieYear, setMovieYear] = useState('');
-
   React.useEffect(() => {
-    props.movies.length === 0 && props.loadMovies();
-  }, [props.movies, props.dispatch]);
-
-  const onAddNewMovie = event => {
-    event.preventDefault();
-    props
-      .addMovie({
-        name: movieName,
-        year: movieYear,
-      })
-      .then(() => {
-        setMovieName('');
-        setMovieYear('');
-        props.loadMovies();
-      });
-  };
-
-  const onDeleteMovie = id => {
-    props.deleteMovie(id).then(props.loadMovies);
-  };
+    _.isEmpty(props.movies) && props.loadMovies();
+  }, [props.movies]);
 
   return (
     <div>
@@ -54,24 +35,21 @@ const MoviesList = props => {
         <ul>
           {props.movies.map(it => (
             <li key={it.id}>
-              {it.name} ({it.year}){' '}
-              {_.includes(props.favorites, it.id) ? (
-                <button onClick={() => props.removeFromFavorites(it.id)}>
-                  &#9733;
-                </button>
-              ) : (
-                <button onClick={() => props.addToFavorites(it.id)}>
-                  &#9734;
-                </button>
-              )}
-              <button onClick={onDeleteMovie.bind(this, it.id)}>delete</button>
+              <MovieItem
+                {...it}
+                isFavorite={_.includes(props.favorites, it.id)}
+                addToFavorites={props.addToFavorites}
+                removeFromFavorites={props.removeFromFavorites}
+                onDeleteMovie={props.deleteMovie}
+                onAfterDeleteMovie={props.loadMovies}
+              />
             </li>
           ))}
         </ul>
       ) : (
         <div>
           Loading ...
-          <button onClick={() => cancelRequest(moviesUrl, true)}>Cancel</button>
+          <button onClick={() => cancelRequest(moviesUrl)}>Cancel</button>
         </div>
       )}
       {props.isCanceled && <div>Request canceled</div>}
@@ -79,25 +57,10 @@ const MoviesList = props => {
       {props.isAdding ? (
         <div>Adding ...</div>
       ) : (
-        <form onSubmit={onAddNewMovie}>
-          <label>
-            Name:
-            <input
-              type="text"
-              value={movieName}
-              onChange={event => setMovieName(event.target.value)}
-            />
-          </label>
-          <label>
-            Year:
-            <input
-              type="text"
-              value={movieYear}
-              onChange={event => setMovieYear(event.target.value)}
-            />
-          </label>
-          <input type="submit" value="Add" />
-        </form>
+        <AddMovieForm
+          submitForm={props.addMovie}
+          onAfterSubmitForm={props.loadMovies}
+        />
       )}
       <br />
       <br />
