@@ -1,9 +1,8 @@
 export { Router } from 'react-router';
 export { Route, Switch, Link } from 'react-router-dom';
 export { createBrowserHistory } from 'history';
-export const _ = require('lodash');
-export { combineReducers, createStore, applyMiddleware, compose } from 'redux';
+export { default as _ } from 'lodash';
 export { connect, Provider } from 'react-redux';
 export { CancelToken } from 'axios';
-export const axios = require('axios');
-export const qs = require('qs');
+export { default as axios } from 'axios';
+export { default as qs } from 'qs';

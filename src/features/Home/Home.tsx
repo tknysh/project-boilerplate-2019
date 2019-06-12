@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from '../../third-party';
+import { Link } from 'third-party';
 
 export const Home: React.FC = () => {
   return (

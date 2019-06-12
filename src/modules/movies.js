@@ -1,4 +1,4 @@
-import { _ } from '../third-party';
+import { _ } from 'third-party';
 import { fetchApi } from 'utils/api';
 import { moviesUrl, singleMovieUrl } from 'constants/endpoints';
 import {

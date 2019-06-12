@@ -4,8 +4,8 @@ import { loadMovies } from 'modules/movies';
 import { removeFromFavorites } from 'modules/favorites';
 
 const mapStateToProps = state => ({
-  items: state.movies.movies,
-  favorites: state.favorites.movies,
+  movies: state.movies.items,
+  favorites: state.favorites.items,
 });
 
 const mapDispatchToProps = {

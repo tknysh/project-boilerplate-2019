@@ -1,6 +1,6 @@
-import { _, axios } from '../third-party';
+// import
+import { _, axios } from 'third-party';
 import { createAction } from 'redux-actions';
-export { createAction, handleActions, createActions } from 'redux-actions';
 
 export function defaultImport(module) {
   // eslint-disable-next-line no-underscore-dangle
@@ -117,3 +117,8 @@ export const createFailureAction = actionNamePrefix =>
   createAction(`${actionNamePrefix}/${FAILURE}`);
 export const createCanceledAction = actionNamePrefix =>
   createAction(`${actionNamePrefix}/${CANCELED}`);
+
+// export
+export { createAction, handleActions, createActions } from 'redux-actions';
+export { combineReducers, createStore, applyMiddleware, compose } from 'redux';
+export { default as thunkMiddleware } from 'redux-thunk';

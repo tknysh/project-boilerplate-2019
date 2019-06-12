@@ -1,10 +1,13 @@
-import { createStore, applyMiddleware, compose } from 'third-party';
-
-import thunkMiddleware from 'redux-thunk';
+import {
+  thunkMiddleware,
+  createStore,
+  applyMiddleware,
+  compose,
+  callAPIMiddleware,
+  defaultImport,
+} from 'utils/redux';
 // reducer
 import rootReducer from 'modules';
-// middleware
-import { callAPIMiddleware, defaultImport } from 'utils/redux';
 
 const storeMiddleware = [thunkMiddleware, callAPIMiddleware];
 

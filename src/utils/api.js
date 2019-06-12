@@ -1,4 +1,4 @@
-import { _, qs, axios, CancelToken } from '../third-party';
+import { _, qs, axios, CancelToken } from 'third-party';
 
 const axiosFetcher = axios.create({
   headers: { 'Content-Type': 'application/json' },
