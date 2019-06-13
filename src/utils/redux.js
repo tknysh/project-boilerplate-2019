@@ -1,6 +1,7 @@
 // import
 import { _, axios } from 'third-party';
 import { createAction } from 'redux-actions';
+import { fetchApi } from 'utils/api';
 
 export function defaultImport(module) {
   // eslint-disable-next-line no-underscore-dangle
@@ -11,16 +12,20 @@ export function defaultImport(module) {
 }
 
 export const callAPIMiddleware = ({ dispatch }) => next => async action => {
-  const { types, callAPI } = action;
+  let { types, url, data, method } = action;
 
   if (!types) {
     // Normal action: pass it on
     return next(action);
   }
 
-  if (typeof callAPI !== 'function') {
-    throw new Error('Expected callAPI to be a function.');
-  }
+  const callAPI =
+    action.callAPI ||
+    (() =>
+      fetchApi(url, {
+        method,
+        data,
+      }));
 
   const [successType, requestType, failureType, cancelType] = types.map(type =>
     typeof type === String ? type : type.toString()
@@ -48,6 +53,54 @@ export const callAPIMiddleware = ({ dispatch }) => next => async action => {
   return result;
 };
 
+export function ReduxApiActionsBuilder(initialState, initialReducers) {
+  let state = initialState;
+  let reducers = initialReducers;
+
+  const updateState = actionState => {
+    state = { ...state, ...actionState };
+  };
+
+  const updateReducers = apiReducers => {
+    reducers = { ...reducers, ...apiReducers };
+  };
+
+  return {
+    getState: () => state,
+    getReducers: () => reducers,
+    createAction: fn => {
+      const options = fn.apply(null, arguments);
+
+      const namespace = options.namespace;
+
+      const initialStoreState = options.initialState || genericApiInitialState;
+
+      if (_.isObjectLike(initialStoreState)) {
+        updateState(initialStoreState);
+      } else if (_.isFunction(initialStoreState)) {
+        updateState(initialStoreState(namespace));
+      } else {
+        throw new Error(
+          'Property state inside `createAction` method is neither object nor function!'
+        );
+      }
+
+      const apiReducers = genericApiReducers(
+        namespace,
+        options.onSuccess,
+        namespace
+      );
+
+      updateReducers(apiReducers);
+
+      return (...args) => ({
+        types: _.keys(apiReducers),
+        ...fn.apply(null, args),
+      });
+    },
+  };
+}
+
 export const genericApiInitialState = (storeValuePrefix = '') => ({
   [_.camelCase(`is ${storeValuePrefix} Pending`)]: false,
   [_.camelCase(`is ${storeValuePrefix} Canceled`)]: false,
@@ -61,11 +114,12 @@ const CANCELED = 'CANCELED';
 
 export const genericApiReducers = (
   actionNamePrefix,
+  onSuccess,
   storeValuePrefix = ''
 ) => ({
   [`${actionNamePrefix}/${SUCCESS}`]: genericSuccessRequestReducer(
     storeValuePrefix
-  )(),
+  )(onSuccess),
   [`${actionNamePrefix}/${REQUEST}`]: genericStartRequestReducer(
     storeValuePrefix
   ),

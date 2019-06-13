@@ -1,69 +1,57 @@
-import { _ } from 'third-party';
-import { fetchApi } from 'utils/api';
+// import { _ } from 'third-party';
 import { moviesUrl, singleMovieUrl } from 'constants/endpoints';
-import {
-  createSuccessAction,
-  handleActions,
-  genericApiInitialState,
-  genericApiReducers,
-  genericSuccessRequestReducer,
-} from 'utils/redux';
-
-const LOAD_MOVIES_PREFIX = 'loadMovies';
-const actionLoadMoviesSuccess = createSuccessAction(LOAD_MOVIES_PREFIX);
-const loadMoviesReducers = genericApiReducers(LOAD_MOVIES_PREFIX);
-
-const ADD_MOVIE_PREFIX = 'addMovie';
-const addMovieReducers = genericApiReducers(ADD_MOVIE_PREFIX, ADD_MOVIE_PREFIX);
-
-const DELETE_MOVIE_PREFIX = 'deleteMovie';
-const deleteMovieReducers = genericApiReducers(
-  DELETE_MOVIE_PREFIX,
-  DELETE_MOVIE_PREFIX
-);
+import { handleActions, ReduxApiActionsBuilder } from 'utils/redux';
 
 const initialState = {
-  ...genericApiInitialState(),
-  ...genericApiInitialState(ADD_MOVIE_PREFIX),
-  ...genericApiInitialState(DELETE_MOVIE_PREFIX),
   items: [],
 };
 
+const reducers = {
+  // your reducers go here
+};
+
+const apiActionsBuilder = ReduxApiActionsBuilder(initialState, reducers);
+
+export const loadMovies = apiActionsBuilder.createAction(a => ({
+  namespace: 'loadMovies',
+  // = = =
+  // initialState (default: initialState = genericApiInitialState)
+  // `initialState` can be passed explicitly and can be either object
+  // or function. function will be executed with a `namespace` passed as
+  // a first parameter
+  // = = =
+  onSuccess: (result, state) => ({ items: result }),
+  // `onSuccess` is a function that receives result of api call in `result` argument
+  // and current state in `state`
+  // result of this function is a new state value to be merged into redux state
+  method: 'get',
+  url: moviesUrl,
+  // = = =
+  // data: JSON.stringify(someDataObject),
+  // = = =
+  // callApi: () => fetchApi('http://....', options),
+  // if you use `callApi` parameter the `method`, `url` and `data` need
+  // to be passed inside `options` parameter with other http options you
+  // need to apply to request
+}));
+
+export const addMovie = apiActionsBuilder.createAction(({ name, year }) => ({
+  namespace: 'addMovie',
+  url: moviesUrl,
+  method: 'post',
+  data: JSON.stringify({
+    name,
+    year,
+  }),
+}));
+
+export const deleteMovie = apiActionsBuilder.createAction(id => ({
+  namespace: 'deleteMovie',
+  method: 'delete',
+  url: singleMovieUrl(id),
+}));
+
 export default handleActions(
-  {
-    ...loadMoviesReducers,
-    [actionLoadMoviesSuccess]: genericSuccessRequestReducer()(payload => ({
-      items: payload,
-    })),
-    ...addMovieReducers,
-    ...deleteMovieReducers,
-  },
-  initialState
+  apiActionsBuilder.getReducers(),
+  apiActionsBuilder.getState()
 );
-
-export const loadMovies = () => ({
-  // Types of actions to emit before and after
-  types: _.keys(loadMoviesReducers),
-  // Perform the fetching:
-  callAPI: () => fetchApi(moviesUrl),
-});
-
-export const addMovie = ({ name, year }) => ({
-  types: _.keys(addMovieReducers),
-  callAPI: () =>
-    fetchApi(moviesUrl, {
-      method: 'post',
-      data: JSON.stringify({
-        name,
-        year,
-      }),
-    }),
-});
-
-export const deleteMovie = id => ({
-  types: _.keys(deleteMovieReducers),
-  callAPI: () =>
-    fetchApi(singleMovieUrl(id), {
-      method: 'delete',
-    }),
-});

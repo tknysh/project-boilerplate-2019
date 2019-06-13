@@ -9,10 +9,10 @@ import { MovieItem } from 'components/MovieItem/MovieItem';
 
 const mapStateToProps = state => ({
   movies: state.movies.items,
-  isLoading: state.movies.isPending,
+  isLoading: state.movies.isLoadMoviesPending,
   isAdding: state.movies.isAddMoviePending,
   isDeleting: state.movies.isDeleteMoviePending,
-  isCanceled: state.movies.isCanceled,
+  isCanceled: state.movies.isLoadMoviesCanceled,
   favorites: state.favorites.items,
 });
 
@@ -26,7 +26,7 @@ const mapDispatchToProps = {
 
 const MoviesList = props => {
   React.useEffect(() => {
-    _.isEmpty(props.movies) && props.loadMovies();
+    _.isEmpty(props.movies) && props.loadMovies(1);
   }, [props.movies]);
 
   return (
